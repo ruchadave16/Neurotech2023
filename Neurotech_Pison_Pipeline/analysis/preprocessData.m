@@ -19,7 +19,7 @@ end
 filtered_lsl_data = [];
 filtered_lsl_data(:,1) = lsl_data(:,1);
 for ch = 1:numCh
-    filtered_lsl_data(:,1+ch) = highpass(lsl_data(:,ch+1),5,Fs);
+    filtered_lsl_data(:,1+ch) = highpass(lsl_data(:,ch+1),20,Fs);
 end
 
 
