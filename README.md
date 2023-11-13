@@ -7,6 +7,7 @@ The following are the dependencies for the Pison pipeline app:
 1. MATLAB (with app designer available)
 2. Python 3.9 or > (check [this](https://www.mathworks.com/support/requirements/python-compatibility.html) site to see what version of python is compatible with your MATLAB.)
 3. Scipy, numpy, pylsl (install with the `installPythonDeps` script in the `dataCollection` folder
+4. pynput for the python scripts (install with `pip install pynput` or `py -m pip install pynput`
 
 Note: if you have a conda installation of python, you may run into problems. Save yourself the hassle and just install another python and make sure that it's on your path.
 You can see if this is the case by typing:
@@ -90,6 +91,31 @@ Once the device is properly connected, check the dropdown list on the app. If yo
 After a session of data collection (30 gestures or however many you specify), you will have one important file named `lsl_data_<timestamp>.mat`. This should contain 3 variables: lsl_data, marker_data, and recording_info (coming soon!). The lsl_data file contains a first column of timestamps and then the four channels of EMG data (the last column should be all zeros, and you should ignore it). The marker_data file contains timestamps and markers for when each gesture started and ended (usually zeros, but sometimes 99 if you chose to re-record this trial... we will throw out the ones that go with the 99 markers).  For the markers, 1 is rock, 2 is paper, 3 is scissors.
 
 The preprocessData() function takes in lsl_data and marker_data and returns an "epoched" and filtered form of this that is ready for analysis. As a sanity check, each gesture's lsl data should be about 1400 samples by 4 channels, as the sensor samples at 1000hz and each gesture lasts 1.4 seconds. The data are high pass filtered at 5Hz.
+
+## Online / Live Classification (Testing Data)
+
+To test data live, you can use the `testData.py` file in the dataCollection folder. This file works similarly to the python data collection scripts, where you find
+a stream through the command line, select it, and go ahead with data collection. 
+
+**Linking your classifier**
+In the `dataCollection` folder, there are two files: `runMatlabModel.m` and `runPythonModel.py`. These files contain starter code for functions that you can put your
+inference code in (use the .m file if you're working in MATLAB, use the .py file if you're using Python). These functions take in a data matrix, which is the same as
+the data matrix you get for every gesture from the data collection procedure. In these functions, add whatever code you need to get a rock-paper-scissors value from
+the data (eg. importing your classifier, etc.). 
+If you use matlab, you will need to install matlab engine in python.
+python3 -m pip install matlabengine 
+
+**Calling with your classifier**
+To call this with your model, go to the `dataCollection` folder in the Neurotech folder. If you're using a MATLAB classifier, call `python3 testData.py --matlabmodel <path/to/runMatlabModel.m>`.
+If you're using a Python classifier, call `python3 testData.py --pythonmodel <path/to/runPythonModel.py>`.
+
+**If you're on windows** you may have to replace `python3` with `py` since Windows seems to alias python to that name 🙃
+
+### Live Battles
+
+To set up your classifier for online battle, add the `--online` flag to your testData call (for example, `python3 testData --online --matlabmodel runMatlabModel.m`).
+
+Once you do this, you'll see the same screen as before where it asks you what stream to connect to. Once you do this, you'll see a window that says 'Press enter when the marker thread is launched'. At this point, wait for the person running rpsMatch to set up and connect to the two players. On another computer, run `rpsMatch.py`. Once both players launch their testData files, there should be two streams that start with 'inferred' with the name of each player's device. Connect to both from the `rpsMatch.py` file and then hit enter on both players' computers. At this point, whoever controls the `rpsMatch` computer can click 'r' to trigger both player laptops, and you should be good to go! 
 
 ### Common issues
 
