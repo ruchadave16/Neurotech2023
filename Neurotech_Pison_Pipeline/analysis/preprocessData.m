@@ -31,5 +31,4 @@ end
 % Run script to epoch: output is ch x timepoints x trials
 [epochedData,gesturelist] = epochFromMarkersToLabels(filtered_lsl_data,marker_data,1400);
 
-
 end

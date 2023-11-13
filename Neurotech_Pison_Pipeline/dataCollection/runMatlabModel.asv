@@ -1,0 +1,40 @@
+function res = runMatlabModel()
+    %%%
+    % This is starter code for where you should add your MATLAB model.
+    % You can place this wherever you want, but keep the function name
+    % This function should take in a bunch of data from the EMG sensor
+    % and return rock, paper, and scissors, based on what your model
+    % predicts. 
+    %%%
+    % disp(data)
+    
+    addpath('../analysis')
+
+    dataChTimeTr = []
+    gestureList = []
+
+    for i = 1:11
+        file = strcat('11_10_Avery/', files(i).name);
+        load(file);
+        [thisdataChTimeTr, thisgestureList] = preprocessData(lsl_data, marker_data);
+        dataChTimeTr = cat(3, dataChTimeTr, thisdataChTimeTr);
+        gestureList = [gestureList; thisgestureList];
+    end
+
+for i = 12:21
+    file = strcat('11_6_Avery/', files(i).name);
+    load(file);
+    [thisdataChTimeTr, thisgestureList] = preprocessData(lsl_data, marker_data);
+    dataChTimeTr = cat(3, dataChTimeTr, thisdataChTimeTr);
+    gestureList = [gestureList; thisgestureList];
+end
+
+
+
+
+
+    load classifier.mat currentClassifier;
+    classifier = currentClassifier;
+
+    res = 2;
+end

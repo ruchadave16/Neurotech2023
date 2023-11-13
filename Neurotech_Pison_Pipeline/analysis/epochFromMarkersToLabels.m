@@ -55,6 +55,7 @@ end
 
 % Empty data: channels x timepoints x trials
 epochedData = zeros(4,numTPs,length(start_times));
+
 % Find the closest data start to the timepoint
 for i = 1:length(start_times)
     % find the row number of the time stamp that is closest to the start
