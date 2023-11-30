@@ -1,40 +1,49 @@
-function res = runMatlabModel()
+function res = runMatlabModel(data)
     %%%
-    % This is starter code for where you should add your MATLAB model.
-    % You can place this wherever you want, but keep the function name
     % This function should take in a bunch of data from the EMG sensor
     % and return rock, paper, and scissors, based on what your model
     % predicts. 
     %%%
-    % disp(data)
-    
-    addpath('../analysis')
+    addpath('../analysis');
 
-    dataChTimeTr = []
-    gestureList = []
+    % Defining sampling frequency and channel number
+    Fs = 1000;
+    numCh = 4;
 
-    for i = 1:11
-        file = strcat('11_10_Avery/', files(i).name);
-        load(file);
-        [thisdataChTimeTr, thisgestureList] = preprocessData(lsl_data, marker_data);
-        dataChTimeTr = cat(3, dataChTimeTr, thisdataChTimeTr);
-        gestureList = [gestureList; thisgestureList];
+    % Filter incoming data same way as training model
+    filtered_lsl_data = [];
+    for ch = 1:numCh
+        x = highpass(data(:,ch+1),5,Fs);
+        x = bandstop(x,[58 62],Fs);
+        x = bandstop(x,[118 122],Fs);
+        filtered_lsl_data(:,ch) = bandstop(x,[178 182],Fs);
     end
+    
+    dataChTimeTr = filtered_lsl_data';
 
-for i = 12:21
-    file = strcat('11_6_Avery/', files(i).name);
-    load(file);
-    [thisdataChTimeTr, thisgestureList] = preprocessData(lsl_data, marker_data);
-    dataChTimeTr = cat(3, dataChTimeTr, thisdataChTimeTr);
-    gestureList = [gestureList; thisgestureList];
-end
+    % Extract same features from new data as trained on
+    includedFeatures = {'var','rms','william', 'lcov', 'wl', 'iqr'}; 
+    feature_table1 = extractFeatures(dataChTimeTr,includedFeatures,Fs);
 
+    % Load in feature table that was trained on 
+    load("feature_table.mat",  "full_feature_table");
+    feature_og = full_feature_table;
 
+    % For Rucha's hand, load in previously created feature table
+    load("feature_norm_ruchatest_bandpassHz.mat", "C", "S");
+    feature_table = normalize(feature_table1, "center", C, "scale", S);
+    full_feature_table = [feature_og; feature_table];
+    % save('feature_table.mat', 'full_feature_table');
 
-
-
+    % Load pretrained classifier
     load classifier.mat currentClassifier;
     classifier = currentClassifier;
 
-    res = 2;
+    % Select ideal features for classification
+    selected_features = [5 6 7 8 21 22 23 24];
+    X_test = feature_table(:,selected_features);
+
+    % Prediction
+    y_test_prediction = currentClassifier.predict(X_test);
+    res = y_test_prediction;
 end
